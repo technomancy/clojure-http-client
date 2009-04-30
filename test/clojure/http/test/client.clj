@@ -34,8 +34,12 @@
 (defonce server (create-server test-port echo-http-response))
 
 (deftest simple-get
-  (let [response (request (format "http://localhost:%s/" test-port)
-                          :get {"Path" "/"})]
+  (let [response (request (str "http://localhost:" test-port))]
     (is (= "OK" (:msg response)))
     (is (= 200 (:code response)))
     (is (= "GET / HTTP/1.1" (first (:body-seq response))))))
+
+(deftest custom-header-get
+  (let [response (request (str "http://localhost:" test-port)
+                          :get {"How-Awesome" "very"})]
+    (is (some #{"How-Awesome: very"} (:body-seq response)))))
