@@ -44,8 +44,7 @@ by a server."
                               (.split cookie "="))))
                 (.split cookie-string ";")))))
 
-(defn create-cookie-string
-  ""
+(defn- create-cookie-string
   [cookie-map]
   (str-join "; " (map (fn [cookie]
                         (str (as-str (key cookie))
@@ -56,6 +55,7 @@ by a server."
 (defn request
   "Perform an HTTP request on url."
   [url & [method cookies]]
+  ;; url should be named connection?
   (let [url (.openConnection (create-url url))
         method (.toUpperCase (as-str (or method
                                          "GET")))]
