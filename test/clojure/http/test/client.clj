@@ -43,3 +43,7 @@
   (let [response (request (str "http://localhost:" test-port)
                           :get {"How-Awesome" "very"})]
     (is (some #{"How-Awesome: very"} (:body-seq response)))))
+
+(deftest case-insensitive-headers
+  (let [response (request (str "http://localhost:" test-port))]
+    (is (= "text/plain" ((:get-header response) "content-type")))))

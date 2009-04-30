@@ -6,11 +6,10 @@
 
 (def default-headers {"User-Agent" (str "Clojure/" (clojure-version)
                                         " (+http://clojure.org)"),
-                      "Connection" "close",
-                      "Accept" ""})
+                      "Connection" "close"})
 
 (defn url
-  "If url is an instance of java.net.URL then returns it without
+  "If u is an instance of java.net.URL then returns it without
 modification, otherwise tries to instantiate a java.net.URL with
 url as its sole argument."
   [u]
@@ -29,7 +28,6 @@ or the error stream of connection, whichever is appropriate."
 (defn- parse-headers
   "Returns a map of the response headers from connection."
   [connection]
-  ;; TODO: headers should be case-insensitive map according to spec
   (let [hs (.getHeaderFields connection)]
     (apply merge (map (fn [e] (when-let [k (key e)]
                                 {k (first (val e))}))
@@ -79,5 +77,7 @@ by a server."
        :code (.getResponseCode connection)
        :msg (.getResponseMessage connection)
        :headers (dissoc headers "Set-Cookie")
+       ;; This correctly implements case-insensitive lookup.
+       :get-header #(.getHeaderField connection (as-str %))
        :cookies (parse-cookies (get headers "Set-Cookie" nil))
        :url (str (.getURL connection))})))
