@@ -47,7 +47,9 @@ by a server."
                 (.split cookie-string ";")))))
 
 (defn- create-cookie-string
-  [cookie-map]
+  "Returns a string suitable for sending to the server in the
+\"Cookie\" header when given a clojure map of cookies."
+[cookie-map]
   (str-join "; " (map (fn [cookie]
                         (str (as-str (key cookie))
                              "="
