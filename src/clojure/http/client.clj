@@ -57,8 +57,8 @@ by a server."
                       cookie-map)))
 
 (defn request
-  "Perform an HTTP request on url u."
-  [u & [method headers cookies]]
+  "Perform an HTTP request on url u. "
+  [u & [method headers cookies body]]
   (let [connection (.openConnection (url u))
         method (.toUpperCase (as-str (or method
                                          "GET")))]
@@ -73,7 +73,19 @@ by a server."
       (.setRequestProperty connection
                            "Cookie"
                            (create-cookie-string cookies)))
-    (.connect connection)
+    (if body
+      (do
+        (.setDoOutput connection true)
+        (.setRequestProperty connection
+                             "Content-Type"
+                             "application/x-www-form-urlencoded")
+        (.connect connection)
+        (.write (.getOutputStream connection)
+                (if (isa? body String)
+                  body
+                  (str-join "&" (map #(str-join "=" %) body)))))
+      (.connect connection))
+
     (let [headers (parse-headers connection)]
       {:body-seq (body-seq connection)
        :code (.getResponseCode connection)
@@ -81,5 +93,5 @@ by a server."
        :headers (dissoc headers "Set-Cookie")
        ;; This correctly implements case-insensitive lookup.
        :get-header #(.getHeaderField connection (as-str %))
-       :cookies (parse-cookies (get headers "Set-Cookie" nil))
+       :cookies (parse-cookies (headers "Set-Cookie"))
        :url (str (.getURL connection))})))
