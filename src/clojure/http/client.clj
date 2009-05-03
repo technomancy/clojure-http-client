@@ -83,6 +83,7 @@ by a server."
         (.write (.getOutputStream connection)
                 (if (isa? body String)
                   body
+                  ;; TODO: keys/values need to be URL-encoded
                   (str-join "&" (map #(str-join "=" %) body)))))
       (.connect connection))
 
