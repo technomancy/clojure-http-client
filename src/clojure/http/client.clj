@@ -2,11 +2,17 @@
   (:use [clojure.contrib.java-utils :only [as-str]]
         [clojure.contrib.duck-streams :only [read-lines]]
         [clojure.contrib.str-utils :only [str-join]])
-  (:import (java.net URL HttpURLConnection)))
+  (:import (java.net URL HttpURLConnection URLEncoder))))
 
 (def default-headers {"User-Agent" (str "Clojure/" (clojure-version)
                                         " (+http://clojure.org)"),
                       "Connection" "close"})
+
+(defn url-encode
+  "Wrapper around java.net.URLEncoder returning a (UTF-8) URL encoded
+representation of text."
+  [text]
+  (URLEncoder/encode text "UTF-8"))
 
 (defn url
   "If u is an instance of java.net.URL then returns it without
@@ -49,7 +55,7 @@ by a server."
 (defn- create-cookie-string
   "Returns a string suitable for sending to the server in the
 \"Cookie\" header when given a clojure map of cookies."
-[cookie-map]
+  [cookie-map]
   (str-join "; " (map (fn [cookie]
                         (str (as-str (key cookie))
                              "="
