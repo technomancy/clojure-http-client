@@ -1,6 +1,6 @@
 (ns clojure.http.client
   (:use [clojure.contrib.java-utils :only [as-str]]
-        [clojure.contrib.duck-streams :only [read-lines]]
+        [clojure.contrib.duck-streams :only [read-lines writer]]
         [clojure.contrib.str-utils :only [str-join]])
   (:import (java.net URL HttpURLConnection URLEncoder)
            (java.io StringReader)))
@@ -14,6 +14,11 @@
 representation of text."
   [text]
   (URLEncoder/encode text "UTF-8"))
+
+(defn- encode-body-map
+  "Turns a map into a URL-encoded string suitable for a request body."
+  [body]
+  (str-join "&" (map #(str-join "=" (map url-encode %)) body)))
 
 (defn url
   "If u is an instance of java.net.URL then returns it without
@@ -88,10 +93,10 @@ by a server."
                              "Content-Type"
                              "application/x-www-form-urlencoded")
         (.connect connection)
-        (.write (.getOutputStream connection)
+        (.write (writer (.getOutputStream connection))
                 (if (isa? body String)
                   body
-                  (str-join "&" (map #(str-join "=" %) body)))))
+                  (encode-body-map body))))
       (.connect connection))
 
     (let [headers (parse-headers connection)]
