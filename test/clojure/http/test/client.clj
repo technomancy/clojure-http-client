@@ -11,7 +11,7 @@
 
 (defn response-headers
   ([headers]
-     (reduce #(conj %1 (str (first %2) ": " (second %2)))
+     (reduce #(conj %1 (str-join ":" %2))
              '("HTTP/1.1 200 OK"
                "Server: clojure-http-test-client"
                "Content-Type: text/plain")
@@ -47,3 +47,9 @@
 (deftest case-insensitive-headers
   (let [response (request (str "http://localhost:" test-port))]
     (is (= "text/plain" ((:get-header response) "content-type")))))
+
+;; need echo response to work with body before this will work.
+;; (deftest request-body
+;;   (let [response (request (str "http://localhost:" test-port)
+;;                           :get {} {} {"hey" "düde"})]
+;;     (is (some #{"o=hai+dere&hey=d%C3%B6od"} (:body-seq response)))))
