@@ -96,6 +96,7 @@ by a server."
       {:body-seq (body-seq connection)
        :code (.getResponseCode connection)
        :msg (.getResponseMessage connection)
+       :method method
        :headers (dissoc headers "Set-Cookie")
        ;; This correctly implements case-insensitive lookup.
        :get-header #(.getHeaderField connection (as-str %))
