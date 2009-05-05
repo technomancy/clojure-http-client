@@ -2,7 +2,8 @@
   (:use [clojure.contrib.java-utils :only [as-str]]
         [clojure.contrib.duck-streams :only [read-lines]]
         [clojure.contrib.str-utils :only [str-join]])
-  (:import (java.net URL HttpURLConnection URLEncoder))))
+  (:import (java.net URL HttpURLConnection URLEncoder)
+           (java.io StringReader)))
 
 (def default-headers {"User-Agent" (str "Clojure/" (clojure-version)
                                         " (+http://clojure.org)"),
@@ -27,9 +28,10 @@ url as its sole argument."
   "Returns a lazy-seq of lines from either the input stream
 or the error stream of connection, whichever is appropriate."
   [connection]
-  (read-lines (if (>= (.getResponseCode connection) 400)
-                (.getErrorStream connection)
-                (.getInputStream connection))))
+  (read-lines (or (if (>= (.getResponseCode connection) 400)
+                    (.getErrorStream connection)
+                    (.getInputStream connection))
+                  (StringReader. ""))))
 
 (defn- parse-headers
   "Returns a map of the response headers from connection."
