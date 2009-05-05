@@ -2,11 +2,18 @@
   (:use [clojure.contrib.java-utils :only [as-str]]
         [clojure.contrib.duck-streams :only [read-lines]]
         [clojure.contrib.str-utils :only [str-join]])
-  (:import (java.net URL HttpURLConnection)))
+  (:import (java.net URL HttpURLConnection URLEncoder)
+           (java.io StringReader)))
 
 (def default-headers {"User-Agent" (str "Clojure/" (clojure-version)
                                         " (+http://clojure.org)"),
                       "Connection" "close"})
+
+(defn url-encode
+  "Wrapper around java.net.URLEncoder returning a (UTF-8) URL encoded
+representation of text."
+  [text]
+  (URLEncoder/encode text "UTF-8"))
 
 (defn url
   "If u is an instance of java.net.URL then returns it without
@@ -21,9 +28,10 @@ url as its sole argument."
   "Returns a lazy-seq of lines from either the input stream
 or the error stream of connection, whichever is appropriate."
   [connection]
-  (read-lines (if (>= (.getResponseCode connection) 400)
-                (.getErrorStream connection)
-                (.getInputStream connection))))
+  (read-lines (or (if (>= (.getResponseCode connection) 400)
+                    (.getErrorStream connection)
+                    (.getInputStream connection))
+                  (StringReader. ""))))
 
 (defn- parse-headers
   "Returns a map of the response headers from connection."
@@ -49,7 +57,7 @@ by a server."
 (defn- create-cookie-string
   "Returns a string suitable for sending to the server in the
 \"Cookie\" header when given a clojure map of cookies."
-[cookie-map]
+  [cookie-map]
   (str-join "; " (map (fn [cookie]
                         (str (as-str (key cookie))
                              "="
@@ -91,6 +99,7 @@ by a server."
       {:body-seq (body-seq connection)
        :code (.getResponseCode connection)
        :msg (.getResponseMessage connection)
+       :method method
        :headers (dissoc headers "Set-Cookie")
        ;; This correctly implements case-insensitive lookup.
        :get-header #(.getHeaderField connection (as-str %))
