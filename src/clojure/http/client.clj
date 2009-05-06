@@ -2,7 +2,7 @@
   (:use [clojure.contrib.java-utils :only [as-str]]
         [clojure.contrib.duck-streams :only [read-lines writer]]
         [clojure.contrib.str-utils :only [str-join]])
-  (:import (java.net URL HttpURLConnection URLEncoder)
+  (:import (java.net URL URLEncoder)
            (java.io StringReader)))
 
 (def default-headers {"User-Agent" (str "Clojure/" (clojure-version)
@@ -82,7 +82,7 @@ by a server."
                            (first header)
                            (second header)))
 
-    (when cookies
+    (when (and cookies (not (empty? cookies)))
       (.setRequestProperty connection
                            "Cookie"
                            (create-cookie-string cookies)))
@@ -93,10 +93,9 @@ by a server."
                              "Content-Type"
                              "application/x-www-form-urlencoded")
         (.connect connection)
-        (.write (writer (.getOutputStream connection))
-                (if (isa? body String)
-                  body
-                  (encode-body-map body))))
+        (with-open [out (writer (.getOutputStream connection))]
+          (.write out "{ hello: \"world\" }")
+          (.flush out)))
       (.connect connection))
 
     (let [headers (parse-headers connection)]
