@@ -20,6 +20,11 @@ representation of text."
   [body]
   (str-join "&" (map #(str-join "=" (map url-encode %)) body)))
 
+(defn- encode-body [body]
+  (if (string? body)
+    body
+    (encode-body-map body)))
+
 (defn url
   "If u is an instance of java.net.URL then returns it without
 modification, otherwise tries to instantiate a java.net.URL with
@@ -94,7 +99,7 @@ by a server."
                              "application/x-www-form-urlencoded")
         (.connect connection)
         (with-open [out (writer (.getOutputStream connection))]
-          (.write out "{ hello: \"world\" }")
+          (.write out (encode-body body))
           (.flush out)))
       (.connect connection))
 
