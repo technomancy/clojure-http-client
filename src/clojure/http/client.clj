@@ -15,15 +15,13 @@ representation of text."
   [text]
   (URLEncoder/encode text "UTF-8"))
 
-(defn- encode-body-map
-  "Turns a map into a URL-encoded string suitable for a request body."
+(defn- encode-body
+  "Turns a map into a URL-encoded string suitable for a request body,
+or just send it verbatim if it's a string."
   [body]
-  (str-join "&" (map #(str-join "=" (map url-encode %)) body)))
-
-(defn- encode-body [body]
   (if (string? body)
     body
-    (encode-body-map body)))
+    (str-join "&" (map #(str-join "=" (map url-encode %)) body))))
 
 (defn url
   "If u is an instance of java.net.URL then returns it without
