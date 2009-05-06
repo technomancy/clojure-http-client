@@ -3,7 +3,7 @@
 ;; A wrapper around client.clj that's designed for accessing RESTful
 ;; APIs pleasantly.
 ;;
-;; Since resourcefully defines a get method, you'll need to :use it
+;; Since resourcefully defines a get function, you'll need to :use it
 ;; :as resourcefully rather than in an unqualified way.
 ;;
 ;; (ns your-ns
@@ -33,10 +33,13 @@
      ~(str "Perform HTTP " method " request to url u with specified headers
 map. Cookies will be saved if inside with-cookies block.")
      [u# & [headers# body#]]
-     (save-cookies (client/request u# ~method headers# *cookies* body#))))
+     (save-cookies (client/request u# ~(str method) headers# *cookies* body#))))
 
-(doseq [method '(get post put delete head)]
-  (define-method method))
+(define-method get)
+(define-method put)
+(define-method post)
+(define-method delete)
+(define-method head)
 
 (defmacro with-cookies
   "Perform body with *cookies* bound to cookie-map. Responses that set
