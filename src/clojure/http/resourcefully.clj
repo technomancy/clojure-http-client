@@ -17,6 +17,7 @@
 ;;
 
 (ns clojure.http.resourcefully
+  (:use [clojure.contrib.str-utils :only [str-join]])
   (:use [clojure.http.client :as client])
   (:refer-clojure :exclude [get]))
 
@@ -27,13 +28,26 @@
     (dosync (alter *cookies* merge (:cookies response))))
   response)
 
+(defn- error? [response]
+  (>= (:code response) 400))
+
+(defn error-message [response]
+  (str "Problem with " (:url response) ": "
+       (:code response) " "
+       (:msg response) "\n"
+       (str-join "\n" (:body-seq response))))
+
 (defmacro define-method
   [method]
   `(defn ~method
      ~(str "Perform HTTP " method " request to url u with specified headers
 map. Cookies will be saved if inside with-cookies block.")
      [u# & [headers# body#]]
-     (save-cookies (client/request u# ~(str method) headers# *cookies* body#))))
+     (let [response# (save-cookies (client/request u# ~(str method)
+                                                   headers# *cookies* body#))]
+       (if (error? response#)
+         (throw (java.io.IOException. (error-message response#)))
+         response#))))
 
 (define-method get)
 (define-method put)
