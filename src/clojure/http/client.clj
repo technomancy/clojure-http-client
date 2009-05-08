@@ -3,7 +3,7 @@
         [clojure.contrib.duck-streams :only [read-lines spit]]
         [clojure.contrib.str-utils :only [str-join]])
   (:import (java.net URL URLEncoder)
-           (java.io StringReader)))
+           (java.io StringReader InputStream)))
 
 (def default-headers {"User-Agent" (str "Clojure/" (clojure-version)
                                         " (+http://clojure.org)"),
@@ -15,13 +15,34 @@ representation of text."
   [text]
   (URLEncoder/encode text "UTF-8"))
 
-(defn- encode-body
-  "Turns a map into a URL-encoded string suitable for a request body,
-or just send it verbatim if it's a string."
+(defn- encode-body-map
+  "Turns a map into a URL-encoded string suitable for a request body."
   [body]
-  (if (string? body)
-    body
-    (str-join "&" (map #(str-join "=" (map url-encode %)) body))))
+  (str-join "&" (map #(str-join "=" (map url-encode %)) body)))
+
+(defn- send-body
+  [body connection headers]
+  (.setDoOutput connection true)
+  ;; this isn't perfect, since it doesn't account for
+  ;; different capitalization etc
+  (when (and (map? body)
+             (not (contains? headers "Content-Type")))
+    (.setRequestProperty connection
+                         "Content-Type"
+                         "application/x-www-form-urlencoded"))
+
+  (.connect connection)
+
+  (let [out (.getOutputStream connection)]
+    (cond
+      (string? body) (spit out body)
+      (map? body) (spit out (encode-body-map body))
+      (instance? InputStream body) (let [bytes (make-array Byte/TYPE 1000)]
+                                     (loop [bytes-read (.read body bytes)]
+                                       (when (pos? bytes-read)
+                                         (.write out bytes 0 bytes-read)
+                                         (recur (.read body bytes))))))
+    (.close out)))
 
 (defn url
   "If u is an instance of java.net.URL then returns it without
@@ -90,17 +111,7 @@ by a server."
                            "Cookie"
                            (create-cookie-string cookies)))
     (if body
-      (do
-        (.setDoOutput connection true)
-        ;; this isn't perfect, since it doesn't account for
-        ;; different capitalization etc
-        (when-not (contains? headers "Content-Type")
-          (.setRequestProperty connection
-                               "Content-Type"
-                               "application/x-www-form-urlencoded"))
-        (.connect connection)
-        (spit (.getOutputStream connection)
-              (encode-body body)))
+      (send-body body connection headers)
       (.connect connection))
 
     (let [headers (parse-headers connection)]
