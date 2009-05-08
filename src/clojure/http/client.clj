@@ -92,9 +92,12 @@ by a server."
     (if body
       (do
         (.setDoOutput connection true)
-        (.setRequestProperty connection
-                             "Content-Type"
-                             "application/x-www-form-urlencoded")
+        ;; this isn't perfect, since it doesn't account for
+        ;; different capitalization etc
+        (when-not (contains? headers "Content-Type")
+          (.setRequestProperty connection
+                               "Content-Type"
+                               "application/x-www-form-urlencoded"))
         (.connect connection)
         (spit (.getOutputStream connection)
               (encode-body body)))
