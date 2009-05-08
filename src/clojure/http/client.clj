@@ -1,6 +1,6 @@
 (ns clojure.http.client
   (:use [clojure.contrib.java-utils :only [as-str]]
-        [clojure.contrib.duck-streams :only [read-lines writer]]
+        [clojure.contrib.duck-streams :only [read-lines spit]]
         [clojure.contrib.str-utils :only [str-join]])
   (:import (java.net URL URLEncoder)
            (java.io StringReader)))
@@ -96,9 +96,8 @@ by a server."
                              "Content-Type"
                              "application/x-www-form-urlencoded")
         (.connect connection)
-        (with-open [out (writer (.getOutputStream connection))]
-          (.write out (encode-body body))
-          (.flush out)))
+        (spit (.getOutputStream connection)
+              (encode-body body)))
       (.connect connection))
 
     (let [headers (parse-headers connection)]
