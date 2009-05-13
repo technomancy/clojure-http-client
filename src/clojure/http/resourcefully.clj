@@ -31,7 +31,7 @@
 (defn- error? [response]
   (>= (:code response) 400))
 
-(defn error-message [response]
+(defn- error-message [response]
   (str "Problem with " (:url response) ": "
        (:code response) " "
        (:msg response) "\n"
@@ -44,7 +44,9 @@
 map. Cookies will be saved if inside with-cookies block.")
      [u# & [headers# body#]]
      (let [response# (save-cookies (client/request u# ~(str method)
-                                                   headers# *cookies* body#))]
+                                                   headers# (if *cookies*
+                                                              @*cookies*)
+                                                   body#))]
        (if (error? response#)
          (throw (java.io.IOException. (error-message response#)))
          response#))))
@@ -56,8 +58,9 @@ map. Cookies will be saved if inside with-cookies block.")
 (define-method head)
 
 (defmacro with-cookies
-  "Perform body with *cookies* bound to cookie-map. Responses that set
-  cookies will have them saved in the *cookies* ref."
+  "Perform body with *cookies* bound to cookie-map (should be a map;
+empty if you don't want any initial cookies). Responses that set cookies
+will have them saved in the *cookies* ref."
   [cookie-map & body]
-  `(binding [*cookies* (ref (or cookie-map {}))]
+  `(binding [*cookies* (ref (or ~cookie-map {}))]
      ~@body))
