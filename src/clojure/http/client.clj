@@ -11,14 +11,11 @@
 
 (defn url-encode
   "Wrapper around java.net.URLEncoder returning a (UTF-8) URL encoded
-representation of text."
-  [text]
-  (URLEncoder/encode text "UTF-8"))
-
-(defn- encode-body-map
-  "Turns a map into a URL-encoded string suitable for a request body."
-  [body]
-  (str-join "&" (map #(str-join "=" (map url-encode %)) body)))
+representation of argument, either a string or map."
+  [arg]
+  (if (map? arg)
+    (str-join \& (map #(str-join \= (map url-encode %)) arg))
+    (URLEncoder/encode (as-str arg) "UTF-8")))
 
 (defn- send-body
   [body connection headers]
@@ -36,7 +33,7 @@ representation of text."
   (let [out (.getOutputStream connection)]
     (cond
       (string? body) (spit out body)
-      (map? body) (spit out (encode-body-map body))
+      (map? body) (spit out (url-encode body))
       (instance? InputStream body) (let [bytes (make-array Byte/TYPE 1000)]
                                      (loop [bytes-read (.read body bytes)]
                                        (when (pos? bytes-read)
