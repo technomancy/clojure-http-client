@@ -66,22 +66,17 @@ or the error stream of connection, whichever is appropriate."
   "Returns a map of the response headers from connection."
   [connection]
   (let [hs (.getHeaderFields connection)]
-    (apply merge (map (fn [e] (when-let [k (key e)]
-                                {k (first (val e))}))
-                      hs))))
+    (into {} (for [[k v] hs :when k] [k (first v)]))))
 
 (defn- parse-cookies
   "Returns a map of cookies when given the Set-Cookie string sent
 by a server."
   [cookie-string]
   (when cookie-string
-    (apply merge
-           (map (fn [cookie]
-                  (apply hash-map
-                         (map (fn [c]
-                                (.trim c))
-                              (.split cookie "="))))
-                (.split cookie-string ";")))))
+    (into {}
+      (for [cookie (.split cookie-string ";")]
+        (let [keyval (map #(.trim %) (.split cookie "="))]
+          [(first keyval) (second keyval)])))))
 
 (defn- create-cookie-string
   "Returns a string suitable for sending to the server in the
