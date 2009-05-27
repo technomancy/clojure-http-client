@@ -21,7 +21,7 @@ more towards interactions with REST-based APIs.
     (resourcefully/put "http://localhost:5984/my-db/doc1" 
                         {} (json-str {:hello "world"}))
 
-    (resourcefully/with-cookies
+    (resourcefully/with-cookies {}
       (resourcefully/post "http://localhost:3000/login" 
                           {} {"user" user "password" password})
       (resourcefully/get "http://localhost:3000/my-secret-page))
