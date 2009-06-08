@@ -5,7 +5,7 @@
   (:import (java.net URL URLEncoder)
            (java.io StringReader InputStream)))
 
-(def default-headers {"User-Agent" (str "Clojure/" (clojure-version)
+(def default-headers {"User-Agent" (str "Clojure/" *clojure-version*
                                         " (+http://clojure.org)"),
                       "Connection" "close"})
 
