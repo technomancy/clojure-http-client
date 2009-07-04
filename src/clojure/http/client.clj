@@ -112,10 +112,10 @@ by a server."
                                                   "GET")))]
     (.setRequestMethod connection method)
 
-    (doseq [header (conj default-headers (or headers {}))]
-      (.setRequestProperty connection
-                           (first header)
-                           (second header)))
+    (doseq [[header value] (conj default-headers (or headers {}))]
+      ;; Treat Cookie specially -- see below.
+      (when (not (= header "Cookie"))
+        (.setRequestProperty connection header value)))
 
     (when (and cookies (not (empty? cookies)))
       (.setRequestProperty connection
