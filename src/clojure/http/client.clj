@@ -2,7 +2,9 @@
   (:use [clojure.contrib.java-utils :only [as-str]]
         [clojure.contrib.duck-streams :only [read-lines spit]]
         [clojure.contrib.str-utils :only [str-join]])
-  (:import (java.net URL URLEncoder)
+  (:import (java.net URL
+                     URLEncoder
+                     HttpURLConnection)
            (java.io StringReader InputStream)))
 
 (def default-headers {"User-Agent" (str "Clojure/" *clojure-version*
@@ -28,10 +30,10 @@ representation of argument, either a string or map."
     (URLEncoder/encode (as-str arg) "UTF-8")))
 
 (defn- send-body
-  [body connection headers]
+  [body #^HttpURLConnection connection headers]
   (.setDoOutput connection true)
-  ;; this isn't perfect, since it doesn't account for
-  ;; different capitalization etc
+  ;; This isn't perfect, since it doesn't account for
+  ;; different capitalization etc.
   (when (and (map? body)
              (not (contains? headers "Content-Type")))
     (.setRequestProperty connection
@@ -44,14 +46,16 @@ representation of argument, either a string or map."
     (cond
       (string? body) (spit out body)
       (map? body) (spit out (url-encode body))
-      (instance? InputStream body) (let [bytes (make-array Byte/TYPE 1000)]
-                                     (loop [bytes-read (.read body bytes)]
-                                       (when (pos? bytes-read)
-                                         (.write out bytes 0 bytes-read)
-                                         (recur (.read body bytes))))))
+      (instance? InputStream body)
+      (let [bytes (make-array Byte/TYPE 1000)]
+        (loop [#^InputStream stream body
+               bytes-read (.read stream bytes)]
+          (when (pos? bytes-read)
+            (.write out bytes 0 bytes-read)
+            (recur stream (.read stream bytes))))))
     (.close out)))
 
-(defn url
+(defn #^URL url
   "If u is an instance of java.net.URL then returns it without
 modification, otherwise tries to instantiate a java.net.URL with
 url as its sole argument."
@@ -63,7 +67,7 @@ url as its sole argument."
 (defn- body-seq
   "Returns a lazy-seq of lines from either the input stream
 or the error stream of connection, whichever is appropriate."
-  [connection]
+  [#^HttpURLConnection connection]
   (read-lines (or (if (>= (.getResponseCode connection) 400)
                     (.getErrorStream connection)
                     (.getInputStream connection))
@@ -71,18 +75,18 @@ or the error stream of connection, whichever is appropriate."
 
 (defn- parse-headers
   "Returns a map of the response headers from connection."
-  [connection]
+  [#^HttpURLConnection connection]
   (let [hs (.getHeaderFields connection)]
     (into {} (for [[k v] hs :when k] [k (first v)]))))
 
 (defn- parse-cookies
   "Returns a map of cookies when given the Set-Cookie string sent
 by a server."
-  [cookie-string]
+  [#^String cookie-string]
   (when cookie-string
     (into {}
-      (for [cookie (.split cookie-string ";")]
-        (let [keyval (map #(.trim %) (.split cookie "="))]
+      (for [#^String cookie (.split cookie-string ";")]
+        (let [keyval (map (fn [#^String x] (.trim x)) (.split cookie "="))]
           [(first keyval) (second keyval)])))))
 
 (defn- create-cookie-string
@@ -90,17 +94,22 @@ by a server."
 \"Cookie\" header when given a clojure map of cookies."
   [cookie-map]
   (str-join "; " (map (fn [cookie]
-                        (str (as-str (key cookie))
+                        (str #^String (as-str (key cookie))
                              "="
-                             (as-str (val cookie))))
+                             #^String (as-str (val cookie))))
                       cookie-map)))
 
 (defn request
-  "Perform an HTTP request on url u. "
+  "Perform an HTTP request on URL u."
   [u & [method headers cookies body]]
-  (let [connection (.openConnection (url u))
-        method (.toUpperCase (as-str (or method
-                                         "GET")))]
+  
+  ;; This function *should* throw an exception on non-HTTP URLs.
+  ;; This will happen if the cast fails.
+  (let [#^HttpURLConnection connection
+        (cast HttpURLConnection (.openConnection (url u)))
+        
+        method (.toUpperCase #^String (as-str (or method
+                                                  "GET")))]
     (.setRequestMethod connection method)
 
     (doseq [header (conj default-headers (or headers {}))]
@@ -112,6 +121,7 @@ by a server."
       (.setRequestProperty connection
                            "Cookie"
                            (create-cookie-string cookies)))
+    
     (if body
       (send-body body connection headers)
       (.connect connection))
@@ -123,6 +133,6 @@ by a server."
        :method method
        :headers (dissoc headers "Set-Cookie")
        ;; This correctly implements case-insensitive lookup.
-       :get-header #(.getHeaderField connection (as-str %))
+       :get-header #(.getHeaderField connection #^String (as-str %))
        :cookies (parse-cookies (headers "Set-Cookie"))
        :url (str (.getURL connection))})))
