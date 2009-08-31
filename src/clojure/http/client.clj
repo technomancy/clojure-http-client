@@ -63,7 +63,7 @@ or the error stream of connection, whichever is appropriate."
   "Returns a map of the response headers from connection."
   [connection]
   (let [hs (.getHeaderFields connection)]
-    (into {} (for [[k v] hs :when k] [k (first v)]))))
+    (into {} (for [[k v] hs :when k] [(keyword (.toLowerCase k)) (seq v)]))))
 
 (defn- parse-cookies
   "Returns a map of cookies when given the Set-Cookie string sent
@@ -111,8 +111,8 @@ by a server."
        :code (.getResponseCode connection)
        :msg (.getResponseMessage connection)
        :method method
-       :headers (dissoc headers "Set-Cookie")
+       :headers (dissoc headers :set-cookie)
        ;; This correctly implements case-insensitive lookup.
        :get-header #(.getHeaderField connection (as-str %))
-       :cookies (parse-cookies (headers "Set-Cookie"))
+       :cookies (apply merge (map parse-cookies (headers :set-cookie)))
        :url (str (.getURL connection))})))
