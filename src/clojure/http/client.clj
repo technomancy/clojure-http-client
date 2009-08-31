@@ -72,7 +72,7 @@ by a server."
   (when cookie-string
     (into {}
       (for [cookie (.split cookie-string ";")]
-        (let [keyval (map #(.trim %) (.split cookie "="))]
+        (let [keyval (map #(.trim %) (.split cookie "=" 2))]
           [(first keyval) (second keyval)])))))
 
 (defn- create-cookie-string
