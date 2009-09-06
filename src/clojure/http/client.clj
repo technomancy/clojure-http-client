@@ -11,6 +11,8 @@
                                         " (+http://clojure.org)"),
                       "Connection" "close"})
 
+(def *connect-timeout* 0)
+
 (defn set-system-proxy!
   "Java's HttpURLConnection cannot do per-request proxying. Instead,
   system properties are used. This function mutates the global setting.
@@ -109,6 +111,7 @@ by a server."
         method (.toUpperCase #^String (as-str (or method
                                                   "GET")))]
     (.setRequestMethod connection method)
+    (.setConnectTimeout connection *connect-timeout*)
 
     (doseq [[header value] (conj default-headers (or headers {}))]
       ;; Treat Cookie specially -- see below.
