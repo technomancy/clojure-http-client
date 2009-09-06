@@ -20,7 +20,7 @@
     (.setProperty "http.proxyHost" host)
     (.setProperty "http.proxyPort" (str port)))
   nil)
-  
+
 (defn url-encode
   "Wrapper around java.net.URLEncoder returning a (UTF-8) URL encoded
 representation of argument, either a string or map."
@@ -77,7 +77,7 @@ or the error stream of connection, whichever is appropriate."
   "Returns a map of the response headers from connection."
   [#^HttpURLConnection connection]
   (let [hs (.getHeaderFields connection)]
-    (into {} (for [[k v] hs :when k] [k (first v)]))))
+    (into {} (for [[k v] hs :when k] [(keyword (.toLowerCase k)) (seq v)]))))
 
 (defn- parse-cookies
   "Returns a map of cookies when given the Set-Cookie string sent
@@ -86,7 +86,7 @@ by a server."
   (when cookie-string
     (into {}
       (for [#^String cookie (.split cookie-string ";")]
-        (let [keyval (map (fn [#^String x] (.trim x)) (.split cookie "="))]
+        (let [keyval (map (fn [#^String x] (.trim x)) (.split cookie "=" 2))]
           [(first keyval) (second keyval)])))))
 
 (defn- create-cookie-string
@@ -102,12 +102,10 @@ by a server."
 (defn request
   "Perform an HTTP request on URL u."
   [u & [method headers cookies body]]
-  
   ;; This function *should* throw an exception on non-HTTP URLs.
   ;; This will happen if the cast fails.
   (let [#^HttpURLConnection connection
         (cast HttpURLConnection (.openConnection (url u)))
-        
         method (.toUpperCase #^String (as-str (or method
                                                   "GET")))]
     (.setRequestMethod connection method)
@@ -121,7 +119,6 @@ by a server."
       (.setRequestProperty connection
                            "Cookie"
                            (create-cookie-string cookies)))
-    
     (if body
       (send-body body connection headers)
       (.connect connection))
@@ -131,8 +128,8 @@ by a server."
        :code (.getResponseCode connection)
        :msg (.getResponseMessage connection)
        :method method
-       :headers (dissoc headers "Set-Cookie")
+       :headers (dissoc headers :set-cookie)
        ;; This correctly implements case-insensitive lookup.
        :get-header #(.getHeaderField connection #^String (as-str %))
-       :cookies (parse-cookies (headers "Set-Cookie"))
+       :cookies (apply merge (map parse-cookies (headers :set-cookie)))
        :url (str (.getURL connection))})))
