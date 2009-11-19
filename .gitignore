@@ -1,4 +1,7 @@
 target
 local.properties
+lib
 classes
 *.jar
+Manifest.txt
+pom.xml
