@@ -1,7 +1,8 @@
 (ns clojure.http.client
   (:use [clojure.contrib.java-utils :only [as-str]]
         [clojure.contrib.duck-streams :only [read-lines spit]]
-        [clojure.contrib.str-utils :only [str-join]])
+        [clojure.contrib.str-utils :only [str-join]]
+        [clojure.contrib.base64 :as base64])
   (:import (java.net URL
                      URLEncoder
                      HttpURLConnection)
@@ -106,8 +107,9 @@ by a server."
   [u & [method headers cookies body]]
   ;; This function *should* throw an exception on non-HTTP URLs.
   ;; This will happen if the cast fails.
-  (let [#^HttpURLConnection connection
-        (cast HttpURLConnection (.openConnection (url u)))
+  (let [u (url u)
+        #^HttpURLConnection connection
+        (cast HttpURLConnection (.openConnection u))
         method (.toUpperCase #^String (as-str (or method
                                                   "GET")))]
     (.setRequestMethod connection method)
@@ -122,6 +124,13 @@ by a server."
       (.setRequestProperty connection
                            "Cookie"
                            (create-cookie-string cookies)))
+
+    (when (.getUserInfo u)
+      (.setRequestProperty connection
+                           "Authorization"
+                           (str "Basic "
+                                (base64/encode-str (.getUserInfo u)))))
+
     (if body
       (send-body body connection headers)
       (.connect connection))
