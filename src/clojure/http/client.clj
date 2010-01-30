@@ -10,6 +10,7 @@
 
 (def default-headers {"User-Agent" (str "Clojure/" *clojure-version*
                                         " (+http://clojure.org)"),
+                      "Accept" "*/*",
                       "Connection" "close"})
 
 (def *connect-timeout* 0)
