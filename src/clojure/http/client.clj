@@ -137,6 +137,7 @@ by a server."
 
     (let [headers (parse-headers connection)]
       {:body-seq (body-seq connection)
+       :connection connection
        :code (.getResponseCode connection)
        :msg (.getResponseMessage connection)
        :method method
