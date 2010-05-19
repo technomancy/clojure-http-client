@@ -1,11 +1,9 @@
-;; (add-classpath "file:///home/phil/src/clojure-http-client/src/")
-
-(ns clojure.http.test.client
-  (:use [clojure.http.client] :reload)
-  (:use [clojure.contrib.test-is]
-        [clojure.contrib.duck-streams]
-        [clojure.contrib.str-utils]
-        [clojure.contrib.server-socket]))
+(ns clojure-http.test.client
+  (:use [clojure-http.client] :reload)
+  (:use [clojure.test]
+        [clojure.contrib.duck-streams :only [reader writer]]
+        [clojure.contrib.str-utils :only [str-join]]
+        [clojure.contrib.server-socket :only [create-server]]))
 
 (def test-port 8239)
 

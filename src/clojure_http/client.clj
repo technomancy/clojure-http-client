@@ -1,4 +1,4 @@
-(ns clojure.http.client
+(ns clojure-http.client
   (:use [clojure.contrib.java-utils :only [as-str]]
         [clojure.contrib.duck-streams :only [read-lines spit]]
         [clojure.contrib.str-utils :only [str-join]]
@@ -8,12 +8,14 @@
                      HttpURLConnection)
            (java.io StringReader InputStream)))
 
-(def default-headers {"User-Agent" (str "Clojure/" *clojure-version*
+(def default-headers {"User-Agent" (str "Clojure/" (clojure-version)
                                         " (+http://clojure.org)"),
                       "Accept" "*/*",
                       "Connection" "close"})
 
 (def *connect-timeout* 0)
+
+(def *buffer-size* 1024)
 
 (defn set-system-proxy!
   "Java's HttpURLConnection cannot do per-request proxying. Instead,
@@ -51,7 +53,7 @@ representation of argument, either a string or map."
       (string? body) (spit out body)
       (map? body) (spit out (url-encode body))
       (instance? InputStream body)
-      (let [bytes (make-array Byte/TYPE 1000)]
+      (let [bytes (make-array Byte/TYPE *buffer-size*)]
         (loop [#^InputStream stream body
                bytes-read (.read stream bytes)]
           (when (pos? bytes-read)

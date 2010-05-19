@@ -1,24 +1,20 @@
-;;; resourcefully.clj
-;;
-;; A wrapper around client.clj that's designed for accessing RESTful
-;; APIs pleasantly.
-;;
-;; Since resourcefully defines a get function, you'll need to :use it
-;; :as resourcefully rather than in an unqualified way.
-;;
-;; (ns your-ns
-;;   (:use [clojure.http.resourcefully :as resourcefully]))
-;;
-;; (resourcefully/get  "http://clojure.org")
-;; (with-cookies
-;;   (resourcefully/post "https://www.google.com/accounts/LoginAuth" {}
-;;                       {"Email" "clojure@gmail.com" "Passwd" "conj"})
-;;   (resourcefully/get  "http://www.google.com/reader"))
-;;
+(ns clojure-http.resourcefully
+  "A wrapper around client.clj that's designed for accessing RESTful
+ APIs pleasantly.
 
-(ns clojure.http.resourcefully
+ Since resourcefully defines a get function, you'll need to :use it
+ :as resourcefully rather than in an unqualified way.
+
+ (ns your-ns
+   (:use [clojure.http.resourcefully :as resourcefully]))
+
+ (resourcefully/get \"http://clojure.org\")
+ (with-cookies
+   (resourcefully/post \"https://www.google.com/accounts/LoginAuth\" {}
+                       {\"Email\" \"clojure@gmail.com\" \"Passwd\" \"conj\"})
+   (resourcefully/get \"http://www.google.com/reader\"))"
   (:use [clojure.contrib.str-utils :only [str-join]])
-  (:use [clojure.http.client :as client])
+  (:use [clojure-http.client :as client])
   (:refer-clojure :exclude [get]))
 
 (def *cookies* nil)
