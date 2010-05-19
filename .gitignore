@@ -1,7 +1,5 @@
-target
-local.properties
 lib
 classes
 *.jar
-Manifest.txt
 autodoc
+pom.xml
