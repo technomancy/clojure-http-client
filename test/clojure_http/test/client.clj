@@ -1,4 +1,5 @@
 (ns clojure-http.test.client
+  (:require [clojure-http.resourcefully])
   (:use [clojure-http.client] :reload)
   (:use [clojure.test]
         [clojure.contrib.duck-streams :only [reader writer]]

@@ -1,6 +1,6 @@
 (ns clojure-http.client
+  (:require [clojure.contrib.duck-streams :as duck])
   (:use [clojure.contrib.java-utils :only [as-str]]
-        [clojure.contrib.duck-streams :only [read-lines spit]]
         [clojure.contrib.str-utils :only [str-join]]
         [clojure.contrib.base64 :as base64])
   (:import (java.net URL
@@ -50,8 +50,8 @@ representation of argument, either a string or map."
 
   (let [out (.getOutputStream connection)]
     (cond
-      (string? body) (spit out body)
-      (map? body) (spit out (url-encode body))
+      (string? body) (duck/spit out body)
+      (map? body) (duck/spit out (url-encode body))
       (instance? InputStream body)
       (let [bytes (make-array Byte/TYPE *buffer-size*)]
         (loop [#^InputStream stream body
@@ -74,10 +74,10 @@ url as its sole argument."
   "Returns a lazy-seq of lines from either the input stream
 or the error stream of connection, whichever is appropriate."
   [#^HttpURLConnection connection]
-  (read-lines (or (if (>= (.getResponseCode connection) 400)
-                    (.getErrorStream connection)
-                    (.getInputStream connection))
-                  (StringReader. ""))))
+  (duck/read-lines (or (if (>= (.getResponseCode connection) 400)
+                         (.getErrorStream connection)
+                         (.getInputStream connection))
+                       (StringReader. ""))))
 
 (defn- parse-headers
   "Returns a map of the response headers from connection."
