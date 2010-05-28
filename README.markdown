@@ -21,18 +21,18 @@ more towards interactions with REST-based APIs.
       (:msg      response)  ;; "OK"
       (:body-seq response)) ;; ("<html><head><meta[...]" ...
 
-    (resurcefully/put "http://localhost:5984/my-db/doc1" 
-                      {} (json-str {:hello "world"}))
+    (resourcefully/put "http://localhost:5984/my-db/doc1" 
+                      {} {} (json-str {:hello "world"}))
 
     (res/with-cookies {}
       (res/post "http://localhost:3000/login" 
-                {} {"user" user "password" password})
+                {} {} {"user" user "password" password})
       (res/get "http://localhost:3000/my-secret-page))
 
 The request function requires a URL and optionally accepts a method
-(GET by default), a map of headers, a map of cookies, and a request
-body. The resourcefully functions take a URL, an optional headers map,
-and an optional body.
+(GET by default), a map of headers, a map of cookies, a map of query
+parameters, and a request body. The resourcefully functions take a URL, 
+an optional headers map, and an optional body.
 
 Request bodies may be strings, maps, or InputStreams. Strings get sent
 verbatim. Maps get sent as application/x-www-form-urlencoded, and
