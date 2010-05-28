@@ -109,7 +109,7 @@ by a server."
   "Takes a map of query parameters and turns them into a query string."
   [url query-map]
   (if (seq query-map)
-    (apply str url "?" (interpose "&" (for [[k v] query-map] (str k "=" v))))
+    (apply str url "?" (interpose "&" (for [[k v] query-map] (str (url-encode k) "=" (url-encode v)))))
     url))
 
 (defn request
