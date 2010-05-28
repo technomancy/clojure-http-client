@@ -37,11 +37,12 @@
   [method]
   `(defn ~method
      ~(str "Perform HTTP " method " request to url u with specified headers
-map. Cookies will be saved if inside with-cookies block.")
-     [u# & [headers# body#]]
+and query map. Cookies will be saved if inside with-cookies block.")
+     [u# & [headers# querys# body#]]
      (let [response# (save-cookies (client/request u# ~(str method)
                                                    headers# (if *cookies*
                                                               @*cookies*)
+						   querys#
                                                    body#))]
        (if (error? response#)
          (throw (java.io.IOException. (error-message response#)))

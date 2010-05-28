@@ -105,12 +105,19 @@ by a server."
                              #^String (as-str (val cookie))))
                       cookie-map)))
 
+(defn- queryify
+  "Takes a map of query parameters and turns them into a query string."
+  [url query-map]
+  (if (seq query-map)
+    (apply str url "?" (interpose "&" (for [[k v] query-map] (str k "=" v))))
+    url))
+
 (defn request
   "Perform an HTTP request on URL u."
-  [u & [method headers cookies body]]
+  [u & [method headers cookies querys body]]
   ;; This function *should* throw an exception on non-HTTP URLs.
   ;; This will happen if the cast fails.
-  (let [u (url u)
+  (let [u (url (queryify u querys))
         #^HttpURLConnection connection
         (cast HttpURLConnection (.openConnection u))
         method (.toUpperCase #^String (as-str (or method
