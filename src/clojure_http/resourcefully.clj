@@ -36,13 +36,12 @@
 (defmacro define-method
   [method]
   `(defn ~method
-     ~(str "Perform HTTP " method " request to url u with specified headers
-and query map. Cookies will be saved if inside with-cookies block.")
-     [u# & [headers# querys# body#]]
+     ~(str "Perform HTTP " method " request to url u with specified headers.
+Cookies will be saved if inside with-cookies block.")
+     [u# & [headers# body#]]
      (let [response# (save-cookies (client/request u# ~(str method)
                                                    headers# (if *cookies*
                                                               @*cookies*)
-						   querys#
                                                    body#))]
        (if (error? response#)
          (throw (java.io.IOException. (error-message response#)))
