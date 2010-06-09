@@ -106,8 +106,8 @@ by a server."
                       cookie-map)))
 
 (defn add-query-params
-  "Takes a URL and query params and returns a URL with query params attached."
-  [url & query-params]
+  "Takes a URL and a map of query params and returns a URL with query params attached."
+  [url query-params]
   (if (seq query-params)
     (apply str url "?"
            (interpose "&" (for [[k v] query-params]
