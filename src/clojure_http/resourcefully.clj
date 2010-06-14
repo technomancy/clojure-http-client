@@ -21,7 +21,7 @@
 
 (defn- save-cookies [response]
   (when (and *cookies* (:cookies response))
-    (dosync (alter *cookies* merge (:cookies response))))
+    (swap! *cookies* merge (:cookies response)))
   response)
 
 (defn- error? [response]
@@ -56,7 +56,7 @@ Cookies will be saved if inside with-cookies block.")
 (defmacro with-cookies
   "Perform body with *cookies* bound to cookie-map (should be a map;
 empty if you don't want any initial cookies). Responses that set cookies
-will have them saved in the *cookies* ref."
+will have them saved in the *cookies* atom."
   [cookie-map & body]
-  `(binding [*cookies* (ref (or ~cookie-map {}))]
+  `(binding [*cookies* (atom (or ~cookie-map {}))]
      ~@body))
