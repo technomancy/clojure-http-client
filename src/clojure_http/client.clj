@@ -17,6 +17,8 @@
 
 (def *buffer-size* 1024)
 
+(def *follow-redirects* true)
+
 (defn set-system-proxy!
   "Java's HttpURLConnection cannot do per-request proxying. Instead,
   system properties are used. This function mutates the global setting.
@@ -126,7 +128,8 @@ by a server."
                                                   "GET")))]
     (.setRequestMethod connection method)
     (.setConnectTimeout connection *connect-timeout*)
-
+    (.setInstanceFollowRedirects connection *follow-redirects*)
+    
     (doseq [[header value] (conj default-headers (or headers {}))]
       ;; Treat Cookie specially -- see below.
       (when (not (= header "Cookie"))
