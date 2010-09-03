@@ -2,8 +2,13 @@
 
 by Dan Larkin and Phil Hagelberg
 
-Note: In the 1.0.0 release the namespace changed from clojure.http to
-clojure-http; please update your require clauses accordingly.
+Note: this library is deprecated; please take a look at
+[clj-http](http://github.com/clj-sys/clj-http) instead. Clojure HTTP
+Client was created simply to wrap the JDK's built-in HTTP classes,
+which are not as good as the functionality that Apache's HTTP client
+provides via clj-http. Now that dependencies are not a huge headache
+to use from Clojure, there is no reason limit yourself to the JDK's
+classes.
 
 ## Example
 
