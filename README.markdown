@@ -2,13 +2,16 @@
 
 by Dan Larkin and Phil Hagelberg
 
-Note: this library is deprecated; please take a look at
-[clj-http](http://github.com/clj-sys/clj-http) instead. Clojure HTTP
-Client was created simply to wrap the JDK's built-in HTTP classes,
-which are not as good as the functionality that Apache's HTTP client
-provides via clj-http. Now that dependencies are not a huge headache
-to use from Clojure, there is no reason limit yourself to the JDK's
-classes.
+Note: this library is deprecated. Clojure HTTP Client was created
+simply to wrap the JDK's built-in HTTP classes, which are not as good
+as the functionality that other clients such as Apache's provide. Now
+that dependencies are not a huge headache to use from Clojure, there
+is no reason limit yourself to the JDK's classes, so other libraries
+are more capable.
+
+Please take a look at [clj-http](http://github.com/clj-sys/clj-http)
+and [http.async.client](http://github.com/neotyk/http.async.client)
+instead.
 
 ## Example
 
