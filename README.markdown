@@ -9,7 +9,7 @@ that dependencies are not a huge headache to use from Clojure, there
 is no reason limit yourself to the JDK's classes, so other libraries
 are more capable.
 
-Please take a look at [clj-http](http://github.com/clj-sys/clj-http)
+Please take a look at [clj-http](http://github.com/dakrone/clj-http)
 and [http.async.client](http://github.com/neotyk/http.async.client)
 instead.
 
